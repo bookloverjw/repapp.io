@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Navbar } from './components/Navbar';
 import { Hero } from './components/Hero';
 import { Features } from './components/Features';
@@ -10,16 +10,38 @@ import { Legal, PrivacyContent, TermsContent } from './components/Legal';
 
 type Page = 'home' | 'privacy' | 'terms';
 
+// Get initial page from URL hash
+const getPageFromHash = (): Page => {
+  const hash = window.location.hash.toLowerCase();
+  if (hash === '#privacy' || hash === '#/privacy') return 'privacy';
+  if (hash === '#terms' || hash === '#/terms') return 'terms';
+  return 'home';
+};
+
 export default function App() {
-  const [currentPage, setCurrentPage] = useState<Page>('home');
+  const [currentPage, setCurrentPage] = useState<Page>(getPageFromHash);
+
+  // Listen for hash changes (browser back/forward)
+  useEffect(() => {
+    const handleHashChange = () => {
+      setCurrentPage(getPageFromHash());
+      window.scrollTo(0, 0);
+    };
+
+    window.addEventListener('hashchange', handleHashChange);
+    return () => window.removeEventListener('hashchange', handleHashChange);
+  }, []);
 
   const handleNavigate = (page: string) => {
-    if (page === 'privacy') setCurrentPage('privacy');
-    else if (page === 'terms') setCurrentPage('terms');
-    else setCurrentPage('home');
-    
-    // Scroll to top on page change
-    window.scrollTo(0, 0);
+    // Update URL hash for direct linking
+    if (page === 'privacy') {
+      window.location.hash = '#privacy';
+    } else if (page === 'terms') {
+      window.location.hash = '#terms';
+    } else {
+      window.location.hash = '';
+    }
+    // State update will happen via hashchange listener
   };
 
   return (
